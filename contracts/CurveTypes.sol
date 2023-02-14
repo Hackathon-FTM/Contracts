@@ -6,7 +6,7 @@ function validateDelta(uint128 delta, bool isLinear) external pure returns (bool
     if(isLinear) {
      return delta >= 0 ?  true : false;
     } else {
-        return delta > 1
+        return delta > 1 ? true : false;
     }
 }
 
