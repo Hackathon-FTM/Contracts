@@ -54,6 +54,7 @@ sendNFTsToContract(msg.sender, nftID);
 @param nftIDS | This parameter 'nftIDS' specifies the unique identification numbers of the NFTs that you wish to exchange for tokens
 @param minValue | Sets the minimum value at which you are willing to exchange your NFT. If this minimum value is not met, the transaction will be automatically reverted.
 @param isRouter | is a boolean value that indicates whether the sender of the transaction is the router or not.
+@param _from | If 'isRouter' is set to true, this parameter '_from' will be used to determine the actual sender of the transaction (i.e., 'msg.sender')
 */
 function swapNFTsForTokens(
     uint[] memory nftIDS,
@@ -62,6 +63,7 @@ function swapNFTsForTokens(
     address _from
 
 ) public {
+    IERC1155 nftContract = IERC1155(nftAddress);
     
 }
 
