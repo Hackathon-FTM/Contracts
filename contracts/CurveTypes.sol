@@ -35,8 +35,9 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
         returns (
             uint newSpotPrice,
             uint256 inputValue,
-            uint256 protocolFee,
-            uint poolFee
+            uint poolFee,
+            uint256 protocolFee
+
         )
 
         {
@@ -47,16 +48,24 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
             if(isLinear) {
                uint newSpot = (delta * numItems) + spotPrice;
                uint calculation = newSpot;
-               uint _protocolFee = (calculation * protocolFeeMultiplier) / 100;
-               uint userFee = (calculation * feeMultiplier) / 100;
+               uint _protocolFee = (calculation * protocolFeeMultiplier) / 1000;
+               uint userFee = (calculation * feeMultiplier) / 1000;
                inputValue = calculation + userFee + _protocolFee;
                protocolFee = _protocolFee;
                newSpotPrice = newSpot;
+               poolFee = userFee;
             } else {
-                uint expoCalculation = spotPrice * (1e18 + delta) ** numItems;
+
+               uint lastSpot = spotPrice;
+             for(uint i; i < numItems; i++) {
+
+                 lastSpot = ( lastSpot * (1000 + delta)) / 1000;
+
+             }
+                uint expoCalculation = lastSpot;
                 newSpotPrice = expoCalculation;
-                uint _protocolFee = (expoCalculation * protocolFeeMultiplier) / 100;
-               uint userFee = (expoCalculation * feeMultiplier) / 100;
+                uint _protocolFee = (expoCalculation * protocolFeeMultiplier) / 1000;
+               uint userFee = (expoCalculation * feeMultiplier) / 1000;
                 inputValue = expoCalculation + userFee + _protocolFee;
                 protocolFee = _protocolFee;
                 poolFee = userFee;
