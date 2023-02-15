@@ -62,11 +62,10 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
                  lastSpot = ( lastSpot * (1000 + delta)) / 1000;
 
              }
-                uint expoCalculation = lastSpot;
-                newSpotPrice = expoCalculation;
-                uint _protocolFee = (expoCalculation * protocolFeeMultiplier) / 1000;
-               uint userFee = (expoCalculation * feeMultiplier) / 1000;
-                inputValue = expoCalculation + userFee + _protocolFee;
+                newSpotPrice = lastSpot;
+                uint _protocolFee = (lastSpot * protocolFeeMultiplier) / 1000;
+               uint userFee = (lastSpot * feeMultiplier) / 1000;
+                inputValue = lastSpot + userFee + _protocolFee;
                 protocolFee = _protocolFee;
                 poolFee = userFee;
      }
