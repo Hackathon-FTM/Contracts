@@ -11,7 +11,9 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 describe("PAIR", function () {
 it("Deploy PAIR & Initialize", async () => {
   const DAI = await ethers.getContractFactory("DAI");
+  const Curve = await ethers.getContractFactory("CurveTypes");
   const PS_PAIR = await ethers.getContractFactory("PS_PAIRV1");
+  const curve = await Curve.deploy();
   const dai = await DAI.deploy();
   const pairContract = await PS_PAIR.deploy();
   await pairContract.initialize(
@@ -21,9 +23,10 @@ it("Deploy PAIR & Initialize", async () => {
    ZERO_ADDRESS,
    dai.address,
    ZERO_ADDRESS,
+   curve.address,
    0,
    [0],
-   false
+   true
   )
 })
 
