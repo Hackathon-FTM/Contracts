@@ -10,5 +10,15 @@ function validateDelta(uint128 delta, bool isLinear) external pure returns (bool
     }
 }
 
+   function validateSpotPrice(uint128 newSpotPrice, bool isLinear)
+        external
+        pure
+        returns (bool valid) {
+             if(isLinear) {
+             return true;
+           } else {
+          return newSpotPrice >= 1 ? true : false;
+        }
+        }
 
 }
