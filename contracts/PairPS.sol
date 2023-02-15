@@ -17,8 +17,10 @@ address public router;
 
 address public curve;
 
-// This constant sets the maximum fee percentage that can be charged for the transaction (5%).
-uint constant MAX_FEE = 50; 
+address owner;
+
+// This constant sets the maximum fee percentage that can be charged for the transaction (10%).
+uint constant MAX_FEE = 100; 
 // Sets the initial price of the NFTs.
 uint spotPrice;
 // The change in price of the NFTs, based on the spot price.
@@ -40,12 +42,14 @@ function initialize(
     address _tokenAddress,
     address _router,
     address _curve,
+    address _owner,
     uint _tokenAmount,
     uint[] memory nftID,
     bool _isLinear
 ) public {
-require(nftAddress == address(0x0), "Already Init");
-// require(_nftAddress != address(0), "Address 0 not supported");
+require(owner == address(0x0), "Already Init");
+ require(_owner != address(0x0), "Address 0 not supported");
+owner = _owner;
 curve = _curve;
 fee = _fee;
 spotPrice = _spotPrice;
@@ -57,7 +61,7 @@ router = _router;
 CurveTypes curveContract = CurveTypes(curve);
 require(curveContract.validateDelta(_delta, _isLinear), "Invalidad Delta");
 require(curveContract.validateSpotPrice(_spotPrice, _isLinear), "Invalid Spot Price");
-sendTokensToContract(msg.sender, _tokenAmount, _tokenAddress); 
+sendTokens(msg.sender, _tokenAmount, _tokenAddress, address(this)); 
 sendNFTsToContract(msg.sender, nftID); 
 }
 
@@ -85,9 +89,8 @@ function swapTokensForAnyNFTs(
     bool isRouter,
     address _from
 ) public {
-    CurveTypes curve = CurveTypes(curve);
-    IERC20 token = IERC20(tokenAddress);
-    (uint newSpotPrice, uint inputValue, uint protocolFee, uint poolFee) = curve.getBuyInfo(
+    CurveTypes _curve = CurveTypes(curve);
+    (uint newSpotPrice, uint inputValue, uint protocolFee, uint poolFee) = _curve.getBuyInfo(
         spotPrice,
         delta,
         nftAmount,
@@ -96,17 +99,24 @@ function swapTokensForAnyNFTs(
         isLinear
     );
     require(inputValue <= maxAmount, "Max Amount is too low");
-    token.transferFrom(msg.sender, address(this), inputValue);
+    spotPrice = newSpotPrice;
+    
+    address sender = isRouter ? _from : msg.sender;
+    sendTokens(sender, inputValue, tokenAddress, address(this));
+    sendTokens(address(this), protocolFee, tokenAddress, router);
+    sendTokens(address(this), poolFee, tokenAddress, owner);
 }
 
 
-function sendTokensToContract(
+function sendTokens(
     address _from,
     uint amount,
-    address add
+    address add,
+    address _to
+
 ) internal {
   IERC20 token = IERC20(add);
-  token.transferFrom(_from, address(this), amount);
+  token.transferFrom(_from, _to, amount);
 }
 
 function sendNFTsToContract(
