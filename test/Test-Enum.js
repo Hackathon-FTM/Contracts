@@ -23,6 +23,6 @@ const {
        const second_tx = await nftContract.tokenOfOwnerByIndex(addr1.address, 0);
        expect(tx).to.equal(1);
        expect(second_tx).to.equal(3);
-
+       
     })
   })

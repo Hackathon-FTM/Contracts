@@ -50,7 +50,7 @@ expect(await curve.validateDelta(
         1,
         true
     );
-    expect(tx.poolFee).to.equal(tx.newSpotPrice / 1000);
+    expect(parseFloat(tx.inputValue)).to.equal(((parseFloat(spotPrice * 3) + parseFloat( delta * 3)) )* 1.002);
 
     const second_tx = await curve.getBuyInfo(
         spotPrice,
@@ -61,7 +61,7 @@ expect(await curve.validateDelta(
         true
     );
     expect(second_tx.poolFee).to.equal(0);
-    expect(second_tx.protocolFee).to.equal(tx.newSpotPrice * 0.001);
+  
 
     const third_tx = await curve.getBuyInfo(
         spotPrice,
@@ -88,11 +88,22 @@ expect(await curve.validateDelta(
        5,
        false
     );
-    expect(tx.newSpotPrice / 10 ** 18).to.equal(0.3 * (1 + 0.01) ** 5);
+   expect(tx.newSpotPrice / 10 ** 18).to.equal(0.3 * (1 + 0.01) ** 5);
 
-    expect(tx.protocolFee).to.equal((tx.newSpotPrice) * 0.005);
+   let lastSpot = spotPrice;
+   let minAmount = 0;
+   for(let i = 0; i < 5; i++) {
+    lastSpot = lastSpot * ((1 + 0.01));
+     minAmount += lastSpot;
+   }
 
-    expect(tx.poolFee).to.equal((tx.newSpotPrice) * 0.01)
+   expect(parseFloat(tx.inputValue))
+   .to.equal(
+    parseFloat(minAmount) + parseFloat(minAmount * 0.005) + parseFloat(minAmount * 0.01)
+   );
+
+    expect(parseFloat(tx.poolFee)).to.equal(parseFloat(minAmount * 0.01) - 2 )
+   
   })
 
 

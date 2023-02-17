@@ -21,6 +21,33 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
         }
         }
 
+  function validateTokensAndNFTsSent(
+    uint delta,
+    uint spotPrice,
+    uint nftsAmount,
+    uint tokensAmount,
+    bool isLinear
+  ) external pure returns(bool valid) {
+
+     if(isLinear) {
+       uint minAmount = (spotPrice * nftsAmount) - (delta * nftsAmount - 1);
+       require(minAmount <= tokensAmount, "Tokens too low");
+       return true;
+     } else {
+        uint minAmount;
+        uint lastSpot = spotPrice;
+
+           for(uint i; i < nftsAmount; i++) {
+
+                 lastSpot = ( lastSpot * (1000 - (delta * i) )) / 1000;
+                 minAmount += lastSpot;
+             }
+        require(minAmount <= tokensAmount, "Tokens Too Low");
+        return true;
+     }
+  }
+
+
 
    function getBuyInfo(
         uint spotPrice,
@@ -47,7 +74,7 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
 
             if(isLinear) {
                uint newSpot = (delta * numItems) + spotPrice;
-               uint calculation = newSpot;
+               uint calculation = (delta * numItems) + (spotPrice * numItems);
                uint _protocolFee = (calculation * protocolFeeMultiplier) / 1000;
                uint userFee = (calculation * feeMultiplier) / 1000;
                inputValue = calculation + userFee + _protocolFee;
@@ -57,15 +84,17 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
             } else {
 
                uint lastSpot = spotPrice;
+               uint minAmount;
              for(uint i; i < numItems; i++) {
 
                  lastSpot = ( lastSpot * (1000 + delta)) / 1000;
+                 minAmount += lastSpot;
 
              }
                 newSpotPrice = lastSpot;
-                uint _protocolFee = (lastSpot * protocolFeeMultiplier) / 1000;
-               uint userFee = (lastSpot * feeMultiplier) / 1000;
-                inputValue = lastSpot + userFee + _protocolFee;
+                uint _protocolFee = (minAmount * protocolFeeMultiplier) / 1000;
+               uint userFee = (minAmount * feeMultiplier) / 1000;
+                inputValue = minAmount + userFee + _protocolFee;
                 protocolFee = _protocolFee;
                 poolFee = userFee;
      }
