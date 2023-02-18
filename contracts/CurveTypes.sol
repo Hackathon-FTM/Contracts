@@ -39,7 +39,7 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
 
            for(uint i; i < nftsAmount; i++) {
 
-                 lastSpot = ( lastSpot * (1000 - (delta * i) )) / 1000;
+                 lastSpot =  (lastSpot * (1000 - (delta))) / 1000;
                  minAmount += lastSpot;
              }
         require(minAmount <= tokensAmount, "Tokens Too Low");
@@ -74,7 +74,11 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
 
             if(isLinear) {
                uint newSpot = (delta * numItems) + spotPrice;
-               uint calculation = (delta * numItems) + (spotPrice * numItems);
+               uint calculation;
+
+               for(uint i; i < numItems; i++) {
+                calculation += (delta * (i + 1)) + spotPrice;
+               }
                uint _protocolFee = (calculation * protocolFeeMultiplier) / 1000;
                uint userFee = (calculation * feeMultiplier) / 1000;
                inputValue = calculation + userFee + _protocolFee;
