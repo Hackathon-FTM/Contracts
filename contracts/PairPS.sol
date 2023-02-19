@@ -85,7 +85,7 @@ contract PS_PAIRV1 is ERC721Holder {
 
         // Send Tokens & NFTs
         sendTokens(_owner, _tokenAmount, address(this), token);
-        sendNFTsToContract(_owner, nftID, nftContract);
+        _sendNFTsToContract(_owner, nftID, nftContract);
     }
 
     /* 
@@ -100,7 +100,67 @@ contract PS_PAIRV1 is ERC721Holder {
         bool isRouter,
         address _from
     ) public {
+        require(owner != address(0x0), "Contract is not Initialized");
+        CurveTypes _curve = CurveTypes(curve);
+        IERC20 token = IERC20(tokenAddress);
         IERC721 nftContract = IERC721(nftAddress);
+
+        (
+            uint256 newSpotPrice,
+            uint256 sellPrice,
+            uint256 poolFee,
+            uint256 protocolFee
+        ) = _curve.getSellInfo(
+                spotPrice,
+                delta,
+                nftIDS.length,
+                fee,
+                PS_FEE,
+                isLinear
+            );
+         require(minValue <= sellPrice, "Sell Price too low");
+         spotPrice = newSpotPrice;
+
+        address sender = isRouter ? _from : msg.sender;
+
+        _sendNFTsToContract(sender, nftIDS, nftContract);
+        sendTokens(address(this), protocolFee, router, token);
+        sendTokens(address(this), poolFee, owner, token);
+        sendTokens(address(this), sellPrice, sender, token);
+    }
+
+    function swapTokensForSpecificNFTs(
+        uint256[] memory nftIDS,
+        uint256 maxAmount,
+        bool isRouter,
+        address _from
+    ) public {
+        require(owner != address(0x0), "Contract is not Initialized");
+        CurveTypes _curve = CurveTypes(curve);
+        IERC20 token = IERC20(tokenAddress);
+        IERC721 nftContract = IERC721(nftAddress);
+
+        (
+            uint256 newSpotPrice,
+            uint256 inputValue,
+            uint256 poolFee,
+            uint256 protocolFee
+        ) = _curve.getBuyInfo(
+                spotPrice,
+                delta,
+                nftIDS.length,
+                fee,
+                PS_FEE,
+                isLinear
+            );
+        require(inputValue <= maxAmount, "Max Amount is too low");
+        spotPrice = newSpotPrice;
+
+        address sender = isRouter ? _from : msg.sender;
+        sendTokens(sender, inputValue, address(this), token);
+        sendTokens(address(this), protocolFee, router, token);
+        sendTokens(address(this), poolFee, owner, token);
+        _sendSpecificNFTstoSender(nftContract, sender, nftIDS);
     }
 
     function swapTokensForAnyNFTs(
@@ -182,7 +242,7 @@ contract PS_PAIRV1 is ERC721Holder {
         }
     }
 
-    function sendNFTsToContract(
+    function _sendNFTsToContract(
         address _from,
         uint256[] memory nftID,
         IERC721 nftContract

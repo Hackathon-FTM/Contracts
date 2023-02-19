@@ -104,4 +104,54 @@ function validateDelta(uint delta, bool isLinear) external pure returns (bool va
      }
 
         }
+
+   function getSellInfo(
+       uint spotPrice,
+        uint delta,
+        uint256 numItems,
+        uint256 feeMultiplier,
+        uint256 protocolFeeMultiplier,
+        bool isLinear
+   )  external
+        pure
+        returns (
+            uint newSpotPrice,
+            uint256 sellPrice,
+            uint poolFee,
+            uint256 protocolFee
+
+        ) {
+      if(isLinear) {
+               uint newSpot =  spotPrice - (delta * numItems) ;
+               uint minAmount;
+
+               for(uint i; i < numItems; i++) {
+                minAmount += spotPrice - (delta * (i + 1));
+               }
+
+               newSpotPrice = newSpot;
+                uint _protocolFee = (minAmount * protocolFeeMultiplier) / 1000;
+               uint userFee = (minAmount * feeMultiplier) / 1000;
+                sellPrice = minAmount - (userFee + _protocolFee);
+                protocolFee = _protocolFee;
+                poolFee = userFee;
+      } else {
+          
+               uint lastSpot = spotPrice;
+               uint minAmount;
+              for(uint i; i < numItems; i++) {
+
+                 lastSpot = ( lastSpot * (1000 - delta)) / 1000;
+                 minAmount += lastSpot;
+
+             }
+                newSpotPrice = lastSpot;
+                uint _protocolFee = (minAmount * protocolFeeMultiplier) / 1000;
+               uint userFee = (minAmount * feeMultiplier) / 1000;
+                sellPrice = minAmount - (userFee + _protocolFee);
+                protocolFee = _protocolFee;
+                poolFee = userFee;
+      }
+   }
+   
 }
