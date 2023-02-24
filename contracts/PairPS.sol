@@ -4,9 +4,15 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 import "./CurveTypes.sol";
 
 contract PS_PAIRV1 is ERC721Holder {
+
+
     // This public parameter specifies the address of the NFT collection.
     address public nftAddress;
     // The address of the token being used for the exchange.
@@ -17,6 +23,8 @@ contract PS_PAIRV1 is ERC721Holder {
     address public curve;
 
     address owner;
+
+    bytes32 root = 0x5f728eda54ea02b05f3cd3099e12f1b8c719f19f093afea50ec16fe44f6aba14;
 
     // This constant sets the maximum fee percentage that can be charged for the transaction (10%).
     uint256 constant MAX_FEE = 100;
@@ -96,14 +104,26 @@ contract PS_PAIRV1 is ERC721Holder {
 */
     function swapNFTsForTokens(
         uint256[] memory nftIDS,
+        bytes32[][] memory proofs,
         uint256 minValue,
         bool isRouter,
         address _from
     ) public {
-        require(owner != address(0x0), "Contract is not Initialized");
+        
+        require(owner != address(0x0), "Contract is not Initialized"); 
+
+            for(uint i; i < nftIDS.length ; i++) {
+             bytes32 leaf = keccak256(abi.encodePacked(
+                Strings.toString(nftIDS[i])
+             ));
+             require(MerkleProof.verify(proofs[i], root, leaf), "Invalid Proofs");
+        }
+
         CurveTypes _curve = CurveTypes(curve);
         IERC20 token = IERC20(tokenAddress);
         IERC721 nftContract = IERC721(nftAddress);
+
+
 
         (
             uint256 newSpotPrice,
@@ -118,8 +138,8 @@ contract PS_PAIRV1 is ERC721Holder {
                 PS_FEE,
                 isLinear
             );
-         require(minValue <= sellPrice, "Sell Price too low");
-         spotPrice = newSpotPrice;
+        require(minValue <= sellPrice, "Sell Price too low");
+        spotPrice = newSpotPrice;
 
         address sender = isRouter ? _from : msg.sender;
 
@@ -127,6 +147,8 @@ contract PS_PAIRV1 is ERC721Holder {
         sendTokens(address(this), protocolFee, router, token);
         sendTokens(address(this), poolFee, owner, token);
         sendTokens(address(this), sellPrice, sender, token);
+
+            
     }
 
     function swapTokensForSpecificNFTs(
@@ -136,6 +158,9 @@ contract PS_PAIRV1 is ERC721Holder {
         address _from
     ) public {
         require(owner != address(0x0), "Contract is not Initialized");
+        
+    
+
         CurveTypes _curve = CurveTypes(curve);
         IERC20 token = IERC20(tokenAddress);
         IERC721 nftContract = IERC721(nftAddress);

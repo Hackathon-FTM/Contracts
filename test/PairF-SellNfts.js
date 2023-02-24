@@ -68,6 +68,12 @@ const {
 
             await pairContract.connect(addr1).swapNFTsForTokens(
                 [3],
+               [ [
+                  '0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5',
+                  '0x0b4aa17bff8fc189efb37609ac5ea9fca0df4c834a6fbac74b24c8119c40fef2',
+                  '0x3235290a71c29b8c01eeb9f16e5cce045aa813fcef791814806e2ff11feb519f',
+                  '0x3ceb0f2fe15be2a24edac38d32e1b42c55e20e749e1dc6cb8413e88a34c9be63'
+                ]],
                 minValue,
                 false,
                 ZERO_ADDRESS
@@ -108,12 +114,23 @@ const {
 
         await pairContract.connect(addr1).swapNFTsForTokens(
             [3, 4],
+            [[
+              '0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5',
+              '0x0b4aa17bff8fc189efb37609ac5ea9fca0df4c834a6fbac74b24c8119c40fef2',
+              '0x3235290a71c29b8c01eeb9f16e5cce045aa813fcef791814806e2ff11feb519f',
+              '0x3ceb0f2fe15be2a24edac38d32e1b42c55e20e749e1dc6cb8413e88a34c9be63'
+            ], [
+              '0xceebf77a833b30520287ddd9478ff51abbdffa30aa90a8d655dba0e8a79ce0c1',
+              '0x6d7746a0c24e6f9bd5f5b81b97fcf98054c1b5dddc2a8e329389759e8a7f91e1',
+              '0xaa9e8275107be9f8089f326bcaaa568367efd2d253eed8cc411711f371c7caeb',
+              '0x3ceb0f2fe15be2a24edac38d32e1b42c55e20e749e1dc6cb8413e88a34c9be63'
+            ]],
             minValue,
             false,
-            ZERO_ADDRESS
-        );
+            ZERO_ADDRESS  
+                 );
         const balanceAfter = await dai.balanceOf(addr1.address);
-        console.log(((balanceAfter - balanceBefore) / 10 ** 18) - 0.27);
+        console.log(((balanceAfter - balanceBefore) / 10 ** 18) - 0.27); 
     })
 
   })

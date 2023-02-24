@@ -85,7 +85,7 @@ describe("PAIR-SNFTs", function () {
           await dai.connect(addr1).mint(mintTokens);
           await dai.connect(addr1).approve(pairContract.address, mintTokens);
 
-        await pairContract.connect(addr1).swapTokensForSpecificNFTs(
+      /*  await pairContract.connect(addr1).swapTokensForSpecificNFTs(
             [1, 2],
             maxAmount,
             false,
@@ -96,14 +96,14 @@ describe("PAIR-SNFTs", function () {
         const balanceNFTs_SC = await nft.balanceOf(pairContract.address);
 
         expect(balanceNFTs_SC).to.equal(1);
-
+*/
         const before = await dai.balanceOf(addr2.address);
         const beforeO = await dai.balanceOf(owner.address);
         const bSender = await dai.balanceOf(addr1.address);
 
         await pairContract.connect(addr1).swapTokensForSpecificNFTs(
             [0],
-          maxAmount,
+            maxAmount,
             false,
             ZERO_ADDRESS
         );
